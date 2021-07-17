@@ -10,6 +10,8 @@ import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
 import { useForm } from "react-hook-form";
+import { useDispatch, useSelector } from "react-redux";
+import { signupActions } from "./redux/actions";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Backdrop from "@material-ui/core/Backdrop";
 import Snackbar from "@material-ui/core/Snackbar";
@@ -46,47 +48,45 @@ export default function SignUp(props) {
     formState: { errors },
   } = useForm();
   const classes = useStyles();
+  const { registering, success_message, failure_message } = useSelector(
+    (state) => state.signup
+  );
   const [showLoader, setShowLoader] = useState(false);
   const [message, setMessage] = useState(null);
   const [showSnackbar, setShowSnackbar] = useState(false);
-
-  // register user request
-  const registerUser = (user) => {
-    setShowLoader(true);
-    const requestOptions = {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(user),
-    };
-    return fetch(`/api/register`, requestOptions).then(handleResponse);
-  };
-
-  const handleResponse = async (response) => {
-    let data = await response.json();
-    let message = (data && data.message) || response.statusText;
-    if (!response.ok) {
-      if (response.status === 401) {
-        // auto logout if 401 response returned from api
-        //logout();
-        // location.reload(true);
-      }
-      setShowLoader(false);
-      return Promise.reject(message);
-    }
-    setShowLoader(false);
-    return message;
-  };
+  const dispatch = useDispatch();
 
   const onSubmit = (data) => {
-    registerUser(data);
+    signupActions.register(data)(dispatch);
   };
 
   function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />;
   }
 
+  useEffect(() => {
+    setShowLoader(registering);
+  }, [registering]);
+
+  useEffect(() => {
+    if (success_message) {
+      let _message = { type: "success", content: success_message };
+      setMessage(_message);
+      setShowSnackbar(true);
+    }
+  }, [success_message]);
+
+  useEffect(() => {
+    if (failure_message) {
+      let _message = { type: "error", content: failure_message };
+      setMessage(_message);
+      setShowSnackbar(true);
+    }
+  }, [failure_message]);
+
   const handleCloseSnackbar = () => {
     setShowSnackbar(false);
+    signupActions.resetMessage()(dispatch);
   };
 
   return (
@@ -99,7 +99,7 @@ export default function SignUp(props) {
         onClose={handleCloseSnackbar}
         key={"top right"}
         autoHideDuration={2000}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        anchorOrigin={{ vertical:'top', horizontal:'right' }}
       >
         <Alert onClose={handleCloseSnackbar} severity={message && message.type}>
           {message && message.content}
@@ -219,7 +219,7 @@ export default function SignUp(props) {
           </Button>
           <Grid container justifyContent="flex-end">
             <Grid item>
-              <Link variant="body2" style={{ cursor: "pointer" }}>
+              <Link variant="body2" style={{cursor:'pointer'}} onClick={()=>props.history.push('/login')}>
                 Already have an account? Sign in
               </Link>
             </Grid>
