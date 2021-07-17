@@ -1,10 +1,10 @@
 import { httpService } from "../../../services/httpService";
-import { signupActionTypes } from "./types";
+import { loginActionTypes } from "./types";
 
-function register(user) {
+function login(user) {
   return (dispatch) => {
-    dispatch(request());
-    httpService.postData(user,'/api/register').then(
+    dispatch(request(user));
+    httpService.postData(user,'/api/authenticate').then(
       (response) => {
         console.log("success response", response);
         dispatch(success(response));
@@ -16,20 +16,21 @@ function register(user) {
     );
   };
 
-  function request() {
+  function request(user) {
     return {
-      type: signupActionTypes.SIGNUP_USER_REQUEST,
+      type: loginActionTypes.LOGIN_USER_REQUEST,
+      payload:user.email
     };
   }
   function success(response) {
     return {
-      type: signupActionTypes.SIGNUP_USER_SUCCESS,
+      type: loginActionTypes.LOGIN_USER_SUCCESS,
       payload: response,
     };
   }
   function failure(response) {
     return {
-      type: signupActionTypes.SIGNUP_USER_FAILURE,
+      type: loginActionTypes.LOGIN_USER_FAILURE,
       payload: response,
     };
   }
@@ -37,11 +38,11 @@ function register(user) {
 
 function resetMessage() {
   return (dispatch) => {
-    dispatch({ type: signupActionTypes.RESET_MESSAGE });
+    dispatch({ type: loginActionTypes.RESET_MESSAGE });
   };
 }
 
-export const signupActions = {
-  register,
+export const loginActions = {
+  login,
   resetMessage,
 };

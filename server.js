@@ -3,9 +3,10 @@ const cookieParser = require("cookie-parser");
 const path = require("path");
 const mongoose = require("mongoose");
 const User = require("./models/User.js");
+const jwt = require("jsonwebtoken");
 
 const app = express();
-
+const secret = "anysecretkey";
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
@@ -47,7 +48,39 @@ app.post("/api/register", async (req, res) => {
     }
   } catch (err) {
     console.log("error while registering user", err);
-    return res.status(500).send({ message: "InternalPlease try again." });
+    return res
+      .status(500)
+      .send({ message: "Internal Error. Please try again." });
+  }
+});
+
+app.post("/api/authenticate", async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    let user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({
+        message: "Incorrect email or password",
+      });
+    } else {
+      let authenticated = await user.isCorrectPassword(password,user.password);
+      if (authenticated) {
+        const payload = { email };
+        const token = jwt.sign(payload, secret, {
+          expiresIn: "1h",
+        });
+        res.cookie("token", token, { httpOnly: true }).status(200).send({
+          message: "Login successfully.",
+        });
+      } else {
+        return res.status(401).json({
+          message: "Incorrect email or password",
+        });
+      }
+    }
+  } catch (err) {
+    console.log("error while loging user", err);
+    return res.status(500).send({ message: "Internal Please try again." });
   }
 });
 

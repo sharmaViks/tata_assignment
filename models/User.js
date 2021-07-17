@@ -24,4 +24,13 @@ UserSchema.pre("save", function (next) {
   }
 });
 
+UserSchema.methods.isCorrectPassword =  async (passwordToMatch,originalPassword) => {
+  try {
+    return await bcrypt.compare(passwordToMatch, originalPassword);
+  }
+  catch(err){
+    return err;
+  }
+};
+
 module.exports = mongoose.model("User", UserSchema);
