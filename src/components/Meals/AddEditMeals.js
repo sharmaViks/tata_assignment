@@ -20,7 +20,6 @@ const useStyles = makeStyles((theme) => ({
 
 export default function AddEditMeal(props) {
   const {
-    register,
     handleSubmit,
     reset,
     control,
@@ -55,7 +54,7 @@ export default function AddEditMeal(props) {
                       label="Meal"
                       variant="outlined"
                       fullWidth
-                      value={value}
+                      value={value || ""}
                       onChange={onChange}
                       error={!!error}
                       helperText={error ? error.message : null}
@@ -78,7 +77,7 @@ export default function AddEditMeal(props) {
                       label="Date"
                       variant="outlined"
                       fullWidth
-                      value={value}
+                      value={value || ""}
                       onChange={onChange}
                       error={!!error}
                       helperText={error ? error.message : null}
@@ -106,7 +105,7 @@ export default function AddEditMeal(props) {
                       label="Calories"
                       fullWidth
                       variant="outlined"
-                      value={value}
+                      value={value || ""}
                       onChange={onChange}
                       error={!!error}
                       helperText={error ? error.message : null}

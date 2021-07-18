@@ -19,7 +19,7 @@ app.use(cookieParser());
 const mongo_uri = "mongodb://localhost:27017/tata_assignment";
 mongoose.connect(
   mongo_uri,
-  { useNewUrlParser: true, useUnifiedTopology: true },
+  { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex:true },
   function (err) {
     if (err) {
       throw err;

@@ -1,4 +1,4 @@
-import React, { useEffect,useState } from "react";
+import React, { useEffect, useState } from "react";
 import MealsTable from "./MealsTable";
 import Box from "@material-ui/core/Box";
 import Button from "@material-ui/core/Button";
@@ -19,7 +19,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function Meals(props) {
-
   const classes = useStyles();
   const [openAddEditMeal, setOpenAddEditMeal] = useState(false);
   const [addOrEdit, setAddOrEdit] = useState("");
@@ -27,26 +26,31 @@ export default function Meals(props) {
   const [showLoader, setShowLoader] = useState(false);
   const [message, setMessage] = useState(null);
   const [showSnackbar, setShowSnackbar] = useState(false);
-  const [meals,setMeals] = useState([]);
-  const [meal_data,setMealData] = useState(null);
+  const [meals, setMeals] = useState([]);
+  const [meal_data, setMealData] = useState(null);
 
-  const { start_updating_meal,start_getting_meals,start_deleting_meal,all_meals, success_message, failure_message } = useSelector(
-    (state) => state.meals
-  );
+  const {
+    start_updating_meal,
+    start_getting_meals,
+    start_deleting_meal,
+    all_meals,
+    success_message,
+    failure_message,
+  } = useSelector((state) => state.meals);
 
   function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />;
   }
 
   const handleEdit = (meal) => {
-    console.log("handleEdit",meal);
+    console.log("handleEdit", meal);
     setOpenAddEditMeal(true);
     setAddOrEdit("Edit");
     setMealData(meal);
   };
 
   const handleDelete = (meal_id) => {
-    console.log("handleDelete",meal_id);
+    console.log("handleDelete", meal_id);
     mealActions.deleteMeal(meal_id)(dispatch);
   };
 
@@ -62,9 +66,9 @@ export default function Meals(props) {
   };
 
   const updateMeal = (meal) => {
-    if(meal_data){
-      meal['meal_id'] = meal_data['meal_id'];
-    } 
+    if (meal_data) {
+      meal["meal_id"] = meal_data["meal_id"];
+    }
     mealActions.updateMeal(meal)(dispatch);
   };
 
@@ -85,7 +89,7 @@ export default function Meals(props) {
       let _message = { type: "success", content: success_message };
       setMessage(_message);
       setShowSnackbar(true);
-      if(openAddEditMeal){
+      if (openAddEditMeal) {
         handleCloseAddEditDialog();
       }
       mealActions.getMeals()(dispatch);
@@ -100,15 +104,47 @@ export default function Meals(props) {
     }
   }, [failure_message]);
 
-  useEffect(()=>{
+  useEffect(() => {
     mealActions.getMeals()(dispatch);
-  },[])
+  }, []);
 
-  useEffect(()=>{
-    if(all_meals){
-      setMeals(all_meals);
+  const processMeal = (meals) => {
+    function groupBy(key, arr) {
+      const map = new Map();
+      arr.forEach((t) => {
+        if (!map.has(t[key])) {
+          map.set(t[key], []);
+        }
+        map.get(t[key]).push(t);
+      });
+      return map;
     }
-  },[all_meals])
+    const total_calories_data = Array.from(groupBy("date", meals).entries()).map(
+      ([date, objs]) => ({
+        date: date,
+        calories: objs.reduce((acc, cur) => acc + Number(cur.calories), 0),
+      })
+    );
+    total_calories_data.map((meal_data) => {
+      meals.map((meal, index) => {
+        if (meal.date === meal_data.date) {
+          if (meal_data.calories < 2000) {
+            meals[index]["background_color"] = "#99ffd6";
+          } else {
+            meals[index]["background_color"] = "#ff8080";
+          }
+        }
+      });
+    });
+    return meals;
+  };
+
+  useEffect(() => {
+    if (all_meals) {
+      let meals = processMeal(all_meals);
+      setMeals(meals);
+    }
+  }, [all_meals]);
 
   const handleCloseSnackbar = () => {
     setShowSnackbar(false);
@@ -136,7 +172,11 @@ export default function Meals(props) {
           Add Meal
         </Button>
       </Box>
-      <MealsTable handleDelete={handleDelete} handleEdit={handleEdit} data={meals}/>
+      <MealsTable
+        handleDelete={handleDelete}
+        handleEdit={handleEdit}
+        data={meals}
+      />
       <AddEditMeal
         open={openAddEditMeal}
         addEditText={addOrEdit}

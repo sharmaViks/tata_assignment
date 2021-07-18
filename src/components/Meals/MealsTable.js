@@ -32,7 +32,7 @@ export default function MealsTable(props) {
         </TableHead>
         <TableBody>
           {props.data && props.data.map(meal => (
-            <TableRow key={meal._id}>
+            <TableRow key={meal._id} style={{backgroundColor:meal.background_color}}>
               <TableCell component="th" scope="row">
                 {meal.meal}
               </TableCell>
