@@ -32,10 +32,7 @@ export default function AddEditMeal(props) {
     let _defaultValues = {};
     reset();
     if(props.meal_to_edit){
-      Object.assign(_defaultValues,props.meal_to_edit)
-      reset({
-        meal:"test"
-      })
+      Object.assign(_defaultValues,props.meal_to_edit);
     }
     setDefaultValues(_defaultValues);
   },[props.meal_to_edit])

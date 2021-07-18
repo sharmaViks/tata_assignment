@@ -1,14 +1,15 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const path = require("path");
-const mongoose = require("mongoose");
-const User = require("./models/User.js");
-const Meal = require("./models/Meal");
 const jwt = require("jsonwebtoken");
-const { v4: uuidv4 } = require("uuid");
+const mongoose = require("mongoose");
+const User = require("./models/User");
+const UserMeals = require("./models/UserMeals");
 const withAuth = require("./middleware");
+const { v4: uuidv4 } = require("uuid");
 
 const app = express();
+
 const secret = "anysecretkey";
 
 app.use(express.urlencoded({ extended: false }));
@@ -32,6 +33,89 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/", function (req, res) {
   res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+app.get("/api/getMeals", withAuth, async (req, res) => {
+  try {
+    let user = req.email;
+    let meals_data = await UserMeals.findOne({user:user},'meals');
+    if(meals_data){
+      meals_data = meals_data.meals
+    }
+    return res.status(200).send({ meals: meals_data });
+  } catch (err) {
+    console.log("error while getting meals", err);
+    return res
+      .status(500)
+      .send({ message: "Internal Error. Please try again." });
+  }
+});
+
+app.delete("/api/deleteMeal", withAuth, async (req, res) => {
+  try {
+    let { meal_id } = req.body;
+    let user = req.email;
+    if (!meal_id) {
+      console.log("Meal Id is required");
+      return res
+        .status(400)
+        .send({ message: "Can't delete at this time. Please try later." });
+    } else {
+      let response = await UserMeals.updateOne({"user":user},{$pull:{"meals":{"meal_id":meal_id}}});
+      if (response) {
+        return res.status(200).send({ message: "Meal deleted successfully." });
+      } else {
+        throw new Error();
+      }
+    }
+  } catch (err) {
+    console.log("error while deleting meal", err);
+    return res
+      .status(500)
+      .send({ message: "Internal Error. Please try again." });
+  }
+});
+
+app.post("/api/updateMeal", withAuth, async (req, res) => {
+  try {
+    let { meal, date, calories, meal_id } = req.body;
+    meal_id = meal_id ? meal_id : uuidv4()
+    let user = req.email;
+    let meal_data = await UserMeals.findOne({"meals.meal_id": meal_id});
+    if (!meal_data) {
+      let user_data = await UserMeals.findOne({"user":user});
+      let response = null;
+      const _meal = { meal, date, calories, meal_id };
+      if(!user_data){
+        const mealData = new UserMeals({meals:[_meal],user:user});
+        response = await mealData.save();
+      }
+      else{
+        response = await UserMeals.updateOne({"user":user},{$push:{"meals":_meal}});
+      }
+      if (response) {
+        return res.status(200).send({ message: "Meal added successfully." });
+      } else {
+        throw new Error();
+      }
+    } else {
+      //Edit meal
+      let response = await UserMeals.updateOne(
+        { "user":user,"meals.meal_id": meal_id},
+        { "meals.$.meal": meal, "meals.$.date": date, "meals.$.calories": calories }
+      );
+      if (response) {
+        return res.status(200).send({ message: "Meal updated successfully." });
+      } else {
+        throw new Error();
+      }
+    }
+  } catch (err) {
+    console.log("error while adding meal", err);
+    return res
+      .status(500)
+      .send({ message: "Internal Error. Please try again." });
+  }
 });
 
 app.post("/api/register", async (req, res) => {
@@ -66,7 +150,7 @@ app.post("/api/authenticate", async (req, res) => {
         message: "Incorrect email or password",
       });
     } else {
-      let authenticated = await user.isCorrectPassword(password, user.password);
+      let authenticated = await user.isCorrectPassword(password,user.password);
       if (authenticated) {
         const payload = { email };
         const token = jwt.sign(payload, secret, {
@@ -87,79 +171,8 @@ app.post("/api/authenticate", async (req, res) => {
   }
 });
 
-app.get("/api/getMeals", withAuth, async (req, res) => {
-  try {
-    let user = req.email;
-    let meals_data = await Meal.find({ user: user });
-    return res.status(200).send({ meals: meals_data });
-  } catch (err) {
-    console.log("error while getting meals", err);
-    return res
-      .status(500)
-      .send({ message: "Internal Error. Please try again." });
-  }
-});
-
-app.delete("/api/deleteMeal", withAuth, async (req, res) => {
-  try {
-    let { meal_id } = req.body;
-    if (!meal_id) {
-      console.log("Meal Id is required");
-      return res
-        .status(400)
-        .send({ message: "Can't delete at this time. Please try later." });
-    } else {
-      let response = await Meal.deleteOne({ meal_id: meal_id });
-      if (response) {
-        return res.status(200).send({ message: "Meal deleted successfully." });
-      } else {
-        throw new Error();
-      }
-    }
-  } catch (err) {
-    console.log("error while deleting meal", err);
-    return res
-      .status(500)
-      .send({ message: "Internal Error. Please try again." });
-  }
-});
-
-app.post("/api/updateMeal", withAuth, async (req, res) => {
-  try {
-    let { meal, date, calories, meal_id } = req.body;
-    let user = req.email;
-    let meal_data = await Meal.findOne({ meal_id });
-    if (!meal_data) {
-      meal_id = uuidv4();
-      const _meal = new Meal({ meal, date, calories, meal_id, user });
-      let response = await _meal.save();
-      if (response) {
-        return res.status(200).send({ message: "Meal added successfully." });
-      } else {
-        throw new Error();
-      }
-    } else {
-      //Edit meal
-      let response = await Meal.updateOne(
-        { meal_id: meal_id },
-        { meal: meal, date: date, calories: calories }
-      );
-      if (response) {
-        return res.status(200).send({ message: "Meal updated successfully." });
-      } else {
-        throw new Error();
-      }
-    }
-  } catch (err) {
-    console.log("error while adding meal", err);
-    return res
-      .status(500)
-      .send({ message: "Internal Error. Please try again." });
-  }
-});
-
 app.get("/api/checkToken", withAuth, function (req, res) {
-  res.status(200).send({ message: "Token verified successfully." });
+  res.status(200).send({message:'Token verified successfully.'});
 });
 
 app.listen(process.env.PORT || 8080);
