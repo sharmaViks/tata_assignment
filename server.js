@@ -66,7 +66,7 @@ app.post("/api/authenticate", async (req, res) => {
         message: "Incorrect email or password",
       });
     } else {
-      let authenticated = await user.isCorrectPassword(password,user.password);
+      let authenticated = await user.isCorrectPassword(password, user.password);
       if (authenticated) {
         const payload = { email };
         const token = jwt.sign(payload, secret, {
@@ -90,7 +90,7 @@ app.post("/api/authenticate", async (req, res) => {
 app.get("/api/getMeals", withAuth, async (req, res) => {
   try {
     let user = req.email;
-    let meals_data = await Meal.find({user:user});
+    let meals_data = await Meal.find({ user: user });
     return res.status(200).send({ meals: meals_data });
   } catch (err) {
     console.log("error while getting meals", err);
@@ -100,7 +100,7 @@ app.get("/api/getMeals", withAuth, async (req, res) => {
   }
 });
 
-app.delete("/api/deleteMeal",withAuth, async (req, res) => {
+app.delete("/api/deleteMeal", withAuth, async (req, res) => {
   try {
     let { meal_id } = req.body;
     if (!meal_id) {
@@ -124,7 +124,7 @@ app.delete("/api/deleteMeal",withAuth, async (req, res) => {
   }
 });
 
-app.post("/api/updateMeal",withAuth, async (req, res) => {
+app.post("/api/updateMeal", withAuth, async (req, res) => {
   try {
     let { meal, date, calories, meal_id } = req.body;
     let user = req.email;
@@ -156,6 +156,10 @@ app.post("/api/updateMeal",withAuth, async (req, res) => {
       .status(500)
       .send({ message: "Internal Error. Please try again." });
   }
+});
+
+app.get("/api/checkToken", withAuth, function (req, res) {
+  res.status(200).send({ message: "Token verified successfully." });
 });
 
 app.listen(process.env.PORT || 8080);
