@@ -32,6 +32,8 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 ## FOLDER STRUCTURE :
 
+  ![alt text](https://github.com/sharmaViks/tata_assignment/blob/master/public/Folder_Structure.PNG)
+
  1.)`models` (Contains the Mongoose Schema for the User and UserMeals collection)
   - User.js [Contains the User Schema definition , Also encrypt the password before saving in DB and function to compare the password to authenticate user]
   - UserMeals.js [Contains the UserMeals Schema definition]
@@ -89,3 +91,32 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
  - I updated my backend Models So that mapping for meals and user and date can be done eaily. Earlier I was having Meals and User collection. Then I faced the issue when I had to show green and red color oon the basis of calories.
  - Showing the color was also a challenge and to be true I copied the logic to group the property of object and get sum on the basis of grouped value of array of object. 
  - I wanted to implement the logout as well but due to shortage of the time I wasn't able to add logout functionality.
+
+## ScreenShots:
+1.) Login Page:
+
+  ![alt text](https://github.com/sharmaViks/tata_assignment/blob/master/public/SignIn.PNG)
+
+2.) SignUp Page:
+
+  ![alt text](https://github.com/sharmaViks/tata_assignment/blob/master/public/Signup.PNG)
+  
+3.) Meals Page:
+
+  ![alt text](https://github.com/sharmaViks/tata_assignment/blob/master/public/List_of_meals.PNG)
+  
+4.) Add Meal:
+
+  ![alt text](https://github.com/sharmaViks/tata_assignment/blob/master/public/Add_meal.PNG)
+  
+5.) Edit Meal:
+
+  ![alt text](https://github.com/sharmaViks/tata_assignment/blob/master/public/Edit_meal.PNG)
+  
+6.) Snackbar:
+
+  ![alt text](https://github.com/sharmaViks/tata_assignment/blob/master/public/Snackbar.PNG)
+  
+7.) Form validation:
+
+  ![alt text](https://github.com/sharmaViks/tata_assignment/blob/master/public/FormValidation.PNG)
