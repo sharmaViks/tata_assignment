@@ -73,6 +73,10 @@ export default function SignUp(props) {
       let _message = { type: "success", content: success_message };
       setMessage(_message);
       setShowSnackbar(true);
+      setTimeout(()=> {
+        props.history.push("/meals");
+      }
+      ,2000)
     }
   }, [success_message]);
 
